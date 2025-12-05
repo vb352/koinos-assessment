@@ -9,7 +9,11 @@ const { notFound } = require('./middleware/errorHandler');
 const app = express();
 const port = process.env.PORT || 3001;
 
-app.use(cors({ origin: 'http://localhost:3000' }));
+// Allow CORS from both port 3000 and 3002
+app.use(cors({ 
+  origin: ['http://localhost:3000', 'http://localhost:3002'],
+  credentials: true 
+}));
 // Basic middleware
 app.use(express.json());
 app.use(morgan('dev'));
