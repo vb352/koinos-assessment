@@ -1,6 +1,15 @@
 import React, { createContext, useCallback, useContext, useState } from 'react';
 
-const DataContext = createContext();
+// Default value ensures useData() never returns undefined
+const defaultValue = {
+  items: [],
+  pagination: null,
+  loading: false,
+  error: null,
+  fetchItems: () => Promise.resolve()
+};
+
+const DataContext = createContext(defaultValue);
 
 export function DataProvider({ children }) {
   const [items, setItems] = useState([]);
