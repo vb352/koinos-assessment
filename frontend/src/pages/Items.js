@@ -1,5 +1,6 @@
 // src/pages/Items.js
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
+import { List as VirtualList } from 'react-window';
 import { useData } from '../state/DataContext';
 import { Link } from 'react-router-dom';
 
@@ -372,74 +373,148 @@ function Items() {
                   </button>
 
                   {isExpanded && (
-                    <ul
+                    <div
                       id={`category-${category}`}
                       role="list"
                       style={{
-                        listStyle: 'none',
-                        padding: 0,
                         margin: '12px 0 0 0',
                       }}
                     >
-                      {categoryItems.map((item, index) => (
-                        <li
-                          key={item.id}
-                          style={{
-                            marginBottom: '8px',
-                            animation: `fadeIn 0.3s ease-in ${index * 0.03}s both`
-                          }}
+                      {/* Use virtualization for categories with many items */}
+                      {categoryItems.length > 10 ? (
+                        <VirtualList
+                          height={Math.min(600, categoryItems.length * 68)}
+                          itemCount={categoryItems.length}
+                          itemSize={68}
+                          width="100%"
+                          style={{ paddingBottom: '8px' }}
                         >
-                          <Link
-                            to={'/items/' + item.id}
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'space-between',
-                              padding: '16px 20px',
-                              fontSize: '16px',
-                              textDecoration: 'none',
-                              color: '#1a1a1a',
-                              backgroundColor: '#fff',
-                              border: '1px solid #e8e8e8',
-                              borderRadius: '8px',
-                              transition: 'all 0.2s',
-                              boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.borderColor = '#0066cc';
-                              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,102,204,0.15)';
-                              e.currentTarget.style.transform = 'translateY(-2px)';
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.borderColor = '#e8e8e8';
-                              e.currentTarget.style.boxShadow = '0 1px 2px rgba(0,0,0,0.05)';
-                              e.currentTarget.style.transform = 'translateY(0)';
-                            }}
-                          >
-                            <span style={{ fontWeight: '500', flex: 1 }}>
-                              {item.name}
-                            </span>
-                            {item.price && (
-                              <span style={{
-                                color: '#0066cc',
-                                fontWeight: '600',
-                                fontSize: '16px',
-                                marginLeft: '16px'
-                              }}>
-                                ${Number(item.price).toFixed(2)}
-                              </span>
-                            )}
-                            <span style={{
-                              marginLeft: '12px',
-                              color: '#999',
-                              fontSize: '20px'
-                            }}>
-                              →
-                            </span>
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
+                          {({ index, style }) => {
+                            const item = categoryItems[index];
+                            return (
+                              <div
+                                style={{
+                                  ...style,
+                                  paddingBottom: '8px'
+                                }}
+                              >
+                                <Link
+                                  to={'/items/' + item.id}
+                                  style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    padding: '16px 20px',
+                                    fontSize: '16px',
+                                    textDecoration: 'none',
+                                    color: '#1a1a1a',
+                                    backgroundColor: '#fff',
+                                    border: '1px solid #e8e8e8',
+                                    borderRadius: '8px',
+                                    transition: 'all 0.2s',
+                                    boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                                    height: '60px'
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    e.currentTarget.style.borderColor = '#0066cc';
+                                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,102,204,0.15)';
+                                    e.currentTarget.style.transform = 'translateY(-2px)';
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    e.currentTarget.style.borderColor = '#e8e8e8';
+                                    e.currentTarget.style.boxShadow = '0 1px 2px rgba(0,0,0,0.05)';
+                                    e.currentTarget.style.transform = 'translateY(0)';
+                                  }}
+                                >
+                                  <span style={{ fontWeight: '500', flex: 1 }}>
+                                    {item.name}
+                                  </span>
+                                  {item.price && (
+                                    <span style={{
+                                      color: '#0066cc',
+                                      fontWeight: '600',
+                                      fontSize: '16px',
+                                      marginLeft: '16px'
+                                    }}>
+                                      ${Number(item.price).toFixed(2)}
+                                    </span>
+                                  )}
+                                  <span style={{
+                                    marginLeft: '12px',
+                                    color: '#999',
+                                    fontSize: '20px'
+                                  }}>
+                                    →
+                                  </span>
+                                </Link>
+                              </div>
+                            );
+                          }}
+                        </VirtualList>
+                      ) : (
+                        /* Regular rendering for small lists */
+                        <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                          {categoryItems.map((item, index) => (
+                            <li
+                              key={item.id}
+                              style={{
+                                marginBottom: '8px',
+                                animation: `fadeIn 0.3s ease-in ${index * 0.03}s both`
+                              }}
+                            >
+                              <Link
+                                to={'/items/' + item.id}
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'space-between',
+                                  padding: '16px 20px',
+                                  fontSize: '16px',
+                                  textDecoration: 'none',
+                                  color: '#1a1a1a',
+                                  backgroundColor: '#fff',
+                                  border: '1px solid #e8e8e8',
+                                  borderRadius: '8px',
+                                  transition: 'all 0.2s',
+                                  boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.borderColor = '#0066cc';
+                                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,102,204,0.15)';
+                                  e.currentTarget.style.transform = 'translateY(-2px)';
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.borderColor = '#e8e8e8';
+                                  e.currentTarget.style.boxShadow = '0 1px 2px rgba(0,0,0,0.05)';
+                                  e.currentTarget.style.transform = 'translateY(0)';
+                                }}
+                              >
+                                <span style={{ fontWeight: '500', flex: 1 }}>
+                                  {item.name}
+                                </span>
+                                {item.price && (
+                                  <span style={{
+                                    color: '#0066cc',
+                                    fontWeight: '600',
+                                    fontSize: '16px',
+                                    marginLeft: '16px'
+                                  }}>
+                                    ${Number(item.price).toFixed(2)}
+                                  </span>
+                                )}
+                                <span style={{
+                                  marginLeft: '12px',
+                                  color: '#999',
+                                  fontSize: '20px'
+                                }}>
+                                  →
+                                </span>
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
                   )}
                 </section>
               );

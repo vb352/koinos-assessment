@@ -58,7 +58,7 @@ function App() {
               alignItems: 'center',
               gap: '8px'
             }}>
-              <span>Koinos Assessment</span>
+              <span>Koinos</span>
             </div>
           </div>
         </nav>
