@@ -17,20 +17,56 @@ function createItemsRouter({ dataPath } = {}) {
   router.get('/', async (req, res, next) => {
     try {
       const data = await readData();
-      const { limit, q } = req.query;
+      const { limit, q, page, pageSize } = req.query;
 
       let results = data;
 
+      // Apply search filter if query provided
       if (q) {
         results = results.filter(item =>
           item.name.toLowerCase().includes(q.toLowerCase())
         );
       }
 
+      // Calculate total count after filtering
+      const total = results.length;
+
+      // Apply pagination if page and pageSize are provided
+      if (page && pageSize) {
+        const pageNum = parseInt(page);
+        const pageSizeNum = parseInt(pageSize);
+        
+        // Validate pagination params
+        if (pageNum < 1 || pageSizeNum < 1) {
+          const err = new Error('Page and pageSize must be positive integers');
+          err.status = 400;
+          throw err;
+        }
+
+        const startIndex = (pageNum - 1) * pageSizeNum;
+        const endIndex = startIndex + pageSizeNum;
+        
+        results = results.slice(startIndex, endIndex);
+
+        // Return paginated response with metadata
+        return res.json({
+          data: results,
+          pagination: {
+            page: pageNum,
+            pageSize: pageSizeNum,
+            total,
+            totalPages: Math.ceil(total / pageSizeNum),
+            hasMore: endIndex < total
+          }
+        });
+      }
+
+      // Apply limit for backward compatibility (deprecated in favor of pagination)
       if (limit) {
         results = results.slice(0, parseInt(limit));
       }
 
+      // Return simple array for non-paginated requests
       res.json(results);
     } catch (err) {
       next(err);
